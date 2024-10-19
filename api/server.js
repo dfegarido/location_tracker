@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 80;
+const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || 'localhost'
 
 app.use(cors());
@@ -11,10 +11,10 @@ app.use(express.json());
 app.post('/location', (req, res) => {
     const { latitude, longitude } = req.body;
     // Log the received location data
-    console.log(`Received Location: ${latitude}, ${longitude}`);
+    console.log(`Location received https://www.google.com/maps?q=${latitude},${longitude}`);
     
     // Respond with a confirmation message
-    res.status(200).json({ message: 'Location received', latitude, longitude });
+    res.status(200).json({ message: `Location received https://www.google.com/maps?q=${latitude},${longitude}` });
 });
 
 // Start the server
