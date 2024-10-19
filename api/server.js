@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 80;
+const HOST = '35.160.120.126'
 
 app.use(cors());
 app.use(express.json());
@@ -9,7 +10,6 @@ app.use(express.json());
 // Endpoint to receive location data
 app.post('/location', (req, res) => {
     const { latitude, longitude } = req.body;
-
     // Log the received location data
     console.log(`Received Location: ${latitude}, ${longitude}`);
     
@@ -18,6 +18,6 @@ app.post('/location', (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
-    console.log(`https://5a22-136-158-28-227.ngrok-free.app`);
+app.listen(PORT, HOST, () => {
+    console.log(`Server running at http://${HOST}:${PORT}`);
 });
